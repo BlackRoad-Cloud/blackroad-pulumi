@@ -20,6 +20,7 @@ import (
 
 	"github.com/pulumi/pulumi/pkg/v3/resource/deploy/deploytest"
 	"github.com/pulumi/pulumi/pkg/v3/util/gsync"
+	"github.com/pulumi/pulumi/sdk/v3/go/common/apitype"
 	"github.com/pulumi/pulumi/sdk/v3/go/common/resource"
 	"github.com/pulumi/pulumi/sdk/v3/go/common/resource/plugin"
 	"github.com/stretchr/testify/assert"
@@ -85,7 +86,7 @@ func (e *mockEvents) OnResourceOutputs(step Step) error {
 	panic("unimplemented")
 }
 
-func (e *mockEvents) OnPolicyViolation(resource.URN, plugin.AnalyzeDiagnostic) {
+func (e *mockEvents) OnPolicyViolation(resource.URN, plugin.AnalyzeDiagnostic, apitype.PolicySeverity) {
 	panic("unimplemented")
 }
 

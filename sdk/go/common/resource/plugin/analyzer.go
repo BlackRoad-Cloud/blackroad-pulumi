@@ -188,6 +188,26 @@ type AnalyzerInfo struct {
 	Tags []string
 	// A URL to the repository where the policy pack is defined.
 	Repository string
+
+	// Map of policy name to severity for quick lookup by policy name.
+	policyNameToSeverity map[string]apitype.PolicySeverity
+}
+
+// Looks up the severity for a given policy name.
+func (info *AnalyzerInfo) GetPolicySeverity(policyName string) apitype.PolicySeverity {
+	m := info.policyNameToSeverity
+	if m == nil {
+		m = make(map[string]apitype.PolicySeverity, len(info.Policies))
+		for _, p := range info.Policies {
+			if p.Severity != apitype.PolicySeverityUnspecified {
+				m[p.Name] = p.Severity
+			}
+		}
+		info.policyNameToSeverity = m
+	}
+	// If the policy name isn't in the map, the zero value
+	// (i.e. PolicySeverityUnspecified) will be returned.
+	return m[policyName]
 }
 
 // AnalyzerPolicyInfo defines the metadata for an individual Policy within a Policy Pack.

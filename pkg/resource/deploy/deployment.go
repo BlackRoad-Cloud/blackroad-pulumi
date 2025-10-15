@@ -29,6 +29,7 @@ import (
 	"github.com/pulumi/pulumi/pkg/v3/resource/deploy/providers"
 	"github.com/pulumi/pulumi/pkg/v3/resource/graph"
 	"github.com/pulumi/pulumi/pkg/v3/util/gsync"
+	"github.com/pulumi/pulumi/sdk/v3/go/common/apitype"
 	"github.com/pulumi/pulumi/sdk/v3/go/common/diag"
 	"github.com/pulumi/pulumi/sdk/v3/go/common/resource"
 	"github.com/pulumi/pulumi/sdk/v3/go/common/resource/config"
@@ -240,7 +241,7 @@ type StepExecutorEvents interface {
 
 // PolicyEvents is an interface that can be used to hook policy events.
 type PolicyEvents interface {
-	OnPolicyViolation(resource.URN, plugin.AnalyzeDiagnostic)
+	OnPolicyViolation(resource.URN, plugin.AnalyzeDiagnostic, apitype.PolicySeverity)
 	OnPolicyRemediation(resource.URN, plugin.Remediation, resource.PropertyMap, resource.PropertyMap)
 	OnPolicyAnalyzeSummary(plugin.PolicySummary)
 	OnPolicyRemediateSummary(plugin.PolicySummary)

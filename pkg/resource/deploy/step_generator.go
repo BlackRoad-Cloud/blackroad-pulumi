@@ -1266,6 +1266,7 @@ func (sg *stepGenerator) continueStepsFromImport(event ContinueResourceImportEve
 				for _, tresult := range response.Remediations {
 					if tresult.Diagnostic != "" {
 						// If there is a diagnostic, we have a warning to display.
+						severity := info.GetPolicySeverity(tresult.PolicyName)
 						sg.deployment.events.OnPolicyViolation(new.URN, plugin.AnalyzeDiagnostic{
 							PolicyName:        tresult.PolicyName,
 							PolicyPackName:    tresult.PolicyPackName,
@@ -1274,7 +1275,7 @@ func (sg *stepGenerator) continueStepsFromImport(event ContinueResourceImportEve
 							Message:           tresult.Diagnostic,
 							EnforcementLevel:  apitype.Advisory,
 							URN:               new.URN,
-						})
+						}, severity)
 					} else if tresult.Properties != nil {
 						// Emit a nice message so users know what was remediated.
 						sg.deployment.events.OnPolicyRemediation(new.URN, tresult, inputs, tresult.Properties)
@@ -1293,6 +1294,7 @@ func (sg *stepGenerator) continueStepsFromImport(event ContinueResourceImportEve
 					return nil, false, fmt.Errorf("failed to run policy: %w", err)
 				}
 				for _, d := range response.Diagnostics {
+					severity := info.GetPolicySeverity(d.PolicyName)
 					if d.EnforcementLevel == apitype.Remediate {
 						// If we ran a remediation, but we are still somehow triggering a violation,
 						// "downgrade" the level we report from remediate to mandatory.
@@ -1306,7 +1308,7 @@ func (sg *stepGenerator) continueStepsFromImport(event ContinueResourceImportEve
 						sg.sawError = true
 					}
 					// For now, we always use the URN we have here rather than a URN specified with the diagnostic.
-					sg.deployment.events.OnPolicyViolation(new.URN, d)
+					sg.deployment.events.OnPolicyViolation(new.URN, d, severity)
 				}
 
 				summary := resourceanalyzer.NewAnalyzePolicySummary(new.URN, response, info)
@@ -3089,6 +3091,7 @@ func (sg *stepGenerator) AnalyzeResources() error {
 			return err
 		}
 		for _, d := range response.Diagnostics {
+			severity := info.GetPolicySeverity(d.PolicyName)
 			if d.EnforcementLevel == apitype.Remediate {
 				// Stack policies cannot be remediated, so treat the level as mandatory.
 				d.EnforcementLevel = apitype.Mandatory
@@ -3107,7 +3110,7 @@ func (sg *stepGenerator) AnalyzeResources() error {
 			if urn == "" {
 				urn = resource.DefaultRootStackURN(sg.deployment.Target().Name.Q(), sg.deployment.source.Project())
 			}
-			sg.deployment.events.OnPolicyViolation(urn, d)
+			sg.deployment.events.OnPolicyViolation(urn, d, severity)
 		}
 
 		summary := resourceanalyzer.NewAnalyzeStackPolicySummary(response, info)
